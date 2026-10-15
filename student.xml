@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="student.xsl"?>
+<!DOCTYPE students [
+    <!ELEMENT students (student+)>
+    <!ELEMENT student (name, department, year)>
+    <!ELEMENT name (#PCDATA)>
+    <!ELEMENT department (#PCDATA)>
+    <!ELEMENT year (#PCDATA)>
+]>
+
+<students>
+    <student>
+        <name>Shivani</name>
+        <department>Information Technology</department>
+        <year>2</year>
+    </student>
+
+    <student>
+        <name>Priya</name>
+        <department>Computer Science</department>
+        <year>2</year>
+    </student>
+
+    <student>
+        <name>Arun</name>
+        <department>Electronics</department>
+        <year>3</year>
+    </student>
+</students>

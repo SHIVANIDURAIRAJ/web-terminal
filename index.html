@@ -1,0 +1,411 @@
+
+<!DOCTYPE html>
+<html ng-app="placementApp">
+<head>
+    <title>Placement Drive Tracker</title>
+
+    <!-- AngularJS Libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #eef2ff;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        h1, h2 {
+            color: #263b80;
+        }
+
+        nav a {
+            margin-right: 15px;
+            color: #263b80;
+            font-weight: bold;
+        }
+
+        input, select {
+            padding: 10px;
+            margin: 6px;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #263b80;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4059b5;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .card {
+            background: #f1f5ff;
+            padding: 15px;
+            margin: 12px 0;
+            border-radius: 8px;
+            border-left: 5px solid #263b80;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .ng-enter {
+            transition: 0.5s;
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .ng-enter-active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .ng-leave {
+            transition: 0.3s;
+            opacity: 1;
+        }
+
+        .ng-leave-active {
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body ng-controller="MainController">
+
+<div class="container">
+    <h1>Placement Drive Tracker</h1>
+
+    <!-- Event Handling -->
+    <nav>
+        <a href="#!/">Home</a>
+        <a href="#!/drives">Placement Drives</a>
+        <a href="#!/about">About</a>
+    </nav>
+
+    <hr>
+
+    <!-- Conditional Display -->
+    <p ng-if="username" class="success">
+        {{welcomeMessage}}
+    </p>
+
+    <!-- Form Validation -->
+    <h3>Student Login</h3>
+
+    <form name="loginForm" ng-submit="login()" novalidate>
+        <input type="text" ng-model="username"
+               placeholder="Enter username" required>
+
+        <input type="password" ng-model="password"
+               placeholder="Enter password" required>
+
+        <button type="submit"
+                ng-disabled="loginForm.$invalid">
+            Login
+        </button>
+    </form>
+
+    <p class="error" ng-if="loginError">{{loginError}}</p>
+
+    <!-- Search and Filter -->
+    <p>Search company:
+        <input ng-model="searchText" placeholder="Company name">
+    </p>
+
+    <p>Minimum CGPA:
+        <input type="number" ng-model="minCgpa" min="0" max="10">
+    </p>
+
+    <!-- HTTP Request -->
+    <button ng-click="loadAPI()">Load Sample API Data</button>
+    <p>{{apiMessage}}</p>
+
+    <!-- Display Sample Placement Companies -->
+    <div class="card" ng-repeat="c in apiCompanies">
+        <h3>{{c.company}}</h3>
+        <p>Role: {{c.role}}</p>
+        <p>Package: {{c.package}} LPA</p>
+    </div>
+
+    <!-- Simple Testing -->
+    <button ng-click="runTests()">Run Simple Tests</button>
+    <p class="success">{{testResult}}</p>
+
+    <!-- Routing -->
+    <div ng-view></div>
+</div>
+
+<script>
+    // AngularJS Module
+    var app = angular.module('placementApp',
+                            ['ngRoute', 'ngAnimate']);
+
+    // Service
+    app.service('DriveService', function() {
+        this.drives = [
+            {
+                company: 'TCS',
+                role: 'Developer',
+                package: 7.5,
+                cgpa: 7,
+                lastDate: '2026-11-30'
+            },
+            {
+                company: 'Infosys',
+                role: 'System Engineer',
+                package: 6,
+                cgpa: 6.5,
+                lastDate: '2026-11-25'
+            },
+            {
+                company: 'Zoho',
+                role: 'Programmer',
+                package: 10,
+                cgpa: 8,
+                lastDate: '2026-11-20'
+            }
+        ];
+
+        this.addDrive = function(drive) {
+            this.drives.push(drive);
+        };
+    });
+
+    // Routing
+    app.config(function($routeProvider) {
+        $routeProvider
+        .when('/', {
+            template: '<h2>Welcome to Placement Tracker</h2>' +
+                      '<p>Track companies and placement opportunities.</p>'
+        })
+        .when('/drives', {
+            templateUrl: 'drives.html',
+            controller: 'DriveController'
+        })
+        .when('/about', {
+            template: '<h2>About</h2>' +
+                      '<p>AngularJS Placement Drive Management.</p>'
+        })
+        .otherwise({redirectTo: '/'});
+    });
+
+    // Custom Filter
+    app.filter('cgpaFilter', function() {
+        return function(drives, minCgpa, searchText) {
+            if (!drives) return [];
+
+            return drives.filter(function(d) {
+                return d.cgpa >= (minCgpa || 0) &&
+                    d.company.toLowerCase().includes(
+                        (searchText || '').toLowerCase()
+                    );
+            });
+        };
+    });
+
+    // Custom Directive
+    app.directive('driveBadge', function() {
+        return {
+            restrict: 'E',
+            scope: {name: '@'},
+            template: '<strong style="color:#167d4b">' +
+                      'Company: {{name}}</strong>'
+        };
+    });
+
+    // Main Controller and Dependency Injection
+    app.controller('MainController',
+        function($scope, $http, DriveService) {
+
+        $scope.username = '';
+        $scope.password = '';
+        $scope.minCgpa = 0;
+        $scope.searchText = '';
+        $scope.apiMessage = '';
+        $scope.loginError = '';
+        $scope.apiCompanies = [];
+
+        // Login
+        $scope.login = function() {
+            if ($scope.username &&
+                $scope.password === 'pass123') {
+
+                $scope.welcomeMessage =
+                    'Welcome ' + $scope.username + '!';
+                $scope.loginError = '';
+
+            } else {
+                $scope.welcomeMessage = '';
+                $scope.loginError =
+                    'Invalid password! Use pass123 for demo.';
+                $scope.password = '';
+            }
+        };
+
+        // Load Sample Placement Data using HTTP
+        $scope.loadAPI = function() {
+            $scope.apiMessage = 'Loading sample placement data...';
+            $scope.apiCompanies = [];
+
+            $http.get(
+                'https://jsonplaceholder.typicode.com/todos/1'
+            )
+            .then(function(response) {
+
+                // Sample company data for demonstration
+                $scope.apiCompanies = [
+                    {
+                        company: 'TCS',
+                        role: 'Software Developer',
+                        package: 7.5
+                    },
+                    {
+                        company: 'Infosys',
+                        role: 'System Engineer',
+                        package: 6
+                    },
+                    {
+                        company: 'Zoho',
+                        role: 'Programmer',
+                        package: 10
+                    },
+                    {
+                        company: 'Wipro',
+                        role: 'Project Engineer',
+                        package: 5
+                    }
+                ];
+
+                $scope.apiMessage =
+                    'Sample placement companies loaded successfully!';
+
+            })
+            .catch(function() {
+                $scope.apiMessage =
+                    'API failed. Check your internet connection.';
+            });
+        };
+
+        // Simple Testing
+        $scope.runTests = function() {
+            var passed = 0;
+
+            if (DriveService.drives.length === 3) passed++;
+            if (DriveService.drives[0].company === 'TCS') passed++;
+            if (DriveService.drives[0].cgpa === 7) passed++;
+
+            $scope.testResult =
+                passed + '/3 simple tests passed';
+        };
+    });
+
+    // Drive Controller
+    app.controller('DriveController',
+        function($scope, DriveService) {
+
+        $scope.drives = DriveService.drives;
+        $scope.minCgpa = 0;
+        $scope.searchText = '';
+        $scope.newDrive = {};
+
+        $scope.addDrive = function() {
+            DriveService.addDrive({
+                company: $scope.newDrive.company,
+                role: $scope.newDrive.role,
+                package: Number($scope.newDrive.package),
+                cgpa: Number($scope.newDrive.cgpa),
+                lastDate: $scope.newDrive.lastDate,
+                applied: false
+            });
+
+            $scope.newDrive = {};
+            $scope.driveForm.$setPristine();
+            $scope.driveForm.$setUntouched();
+        };
+    });
+</script>
+
+<!-- Placement Drives Template -->
+<script type="text/ng-template" id="drives.html">
+    <h2>Available Placement Drives</h2>
+
+    <label>Minimum CGPA:</label>
+    <input type="number" ng-model="minCgpa" min="0" max="10">
+
+    <div class="card"
+         ng-repeat="d in drives | cgpaFilter:minCgpa:searchText">
+
+        <drive-badge name="{{d.company}}"></drive-badge>
+
+        <p>Role: {{d.role | uppercase}}</p>
+        <p>Package: {{d.package | currency:'₹'}}</p>
+        <p>Minimum CGPA: {{d.cgpa}}</p>
+        <p>Last Date: {{d.lastDate}}</p>
+
+        <button ng-click="d.applied = !d.applied">
+            {{d.applied ? 'Withdraw' : 'Apply'}}
+        </button>
+
+        <p ng-if="d.applied" class="success">
+            Application submitted!
+        </p>
+    </div>
+
+    <p ng-if="(drives | cgpaFilter:minCgpa:searchText).length === 0">
+        No matching placement drives found.
+    </p>
+
+    <h3>Add New Drive</h3>
+
+    <form name="driveForm" ng-submit="addDrive()" novalidate>
+        <input ng-model="newDrive.company"
+               placeholder="Company" required>
+
+        <input ng-model="newDrive.role"
+               placeholder="Job Role" required>
+
+        <input type="number" ng-model="newDrive.package"
+               placeholder="Package (LPA)" min="0.1" required>
+
+        <input type="number" ng-model="newDrive.cgpa"
+               placeholder="Minimum CGPA" min="0" max="10" required>
+
+        <input type="date" ng-model="newDrive.lastDate" required>
+
+        <button type="submit" ng-disabled="driveForm.$invalid">
+            Add Drive
+        </button>
+    </form>
+</script>
+
+</body>
+</html>

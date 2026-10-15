@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Placement Drive Tracker Login</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #eaf0ff;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .box {
+            background: white;
+            width: 300px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 8px;
+            width: 85%;
+        }
+        button {
+            background: #263b80;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #error { color: red; }
+        #welcome { color: green; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Placement Tracker Login</h2>
+
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <button id="login" onclick="loginUser()">Login</button>
+
+    <p id="welcome"></p>
+    <p id="error"></p>
+</div>
+
+<script>
+function loginUser() {
+    var user = document.getElementById("username").value;
+    var pass = document.getElementById("password");
+
+    document.getElementById("welcome").innerText = "";
+    document.getElementById("error").innerText = "";
+
+    if (user === "Shivani" && pass.value === "pass123") {
+        document.getElementById("welcome").innerText =
+            "Welcome " + user;
+    } else {
+        document.getElementById("error").innerText =
+            "Invalid username or password";
+        pass.value = "";
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+mkdir PlacementDB
+cd PlacementDB
+npm init -y
+npm install express mongoose dotenv
+
+
+
+CRUD OPERATIONS
+1.create
+
+$body = @{
+    company = "TCS"
+    role = "Software Developer"
+    package = 7.5
+    lastDate = "2026-11-30"
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+    -Uri "http://localhost:3000/drives" `
+    -Method POST `
+    -ContentType "application/json" `
+    -Body $body
+2.read
+Invoke-RestMethod -Uri "http://localhost:3000/drives"
+3.update
+
+$body = @{
+    package = 9
+} | ConvertTo-Json
+
+Invoke-RestMethod `
+    -Uri "http://localhost:3000/drives/YOUR_ID_HERE" `
+    -Method PUT `
+    -ContentType "application/json" `
+    -Body $body
+4.delete
+
+Invoke-RestMethod `
+    -Uri "http://localhost:3000/drives/YOUR_ID_HERE" `
+    -Method DELETE
+
+
+
+python -m pip install lxml
+
+
+for only if you add xsl file:
+python -m http.server 8000
